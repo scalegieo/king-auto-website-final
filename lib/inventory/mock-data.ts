@@ -1,0 +1,121 @@
+import type { Vehicle } from "./types";
+
+/** Fallback when no Dealr feed is configured yet */
+export const MOCK_INVENTORY: Vehicle[] = [
+  {
+    id: "ka-001",
+    make: "Dodge",
+    model: "Charger",
+    year: 2021,
+    price: 29999,
+    mileage: 105999,
+    trim: "Scat Pack RWD",
+    stockNumber: "KA001",
+    image:
+      "https://placehold.co/800x500/0a0a0a/CE1126/png?text=2021+Charger",
+    status: "available",
+  },
+  {
+    id: "ka-002",
+    make: "Toyota",
+    model: "Tacoma",
+    year: 2021,
+    price: 34499,
+    mileage: 64009,
+    trim: "TRD Sport",
+    stockNumber: "KA002",
+    image:
+      "https://placehold.co/800x500/0a0a0a/D4AF37/png?text=2021+Tacoma",
+    status: "available",
+  },
+  {
+    id: "ka-003",
+    make: "Tesla",
+    model: "Model 3",
+    year: 2018,
+    price: 21999,
+    mileage: 87881,
+    trim: "Long Range",
+    stockNumber: "KA003",
+    image:
+      "https://placehold.co/800x500/0a0a0a/CE1126/png?text=Model+3",
+    status: "available",
+  },
+  {
+    id: "ka-004",
+    make: "Subaru",
+    model: "WRX STI",
+    year: 2017,
+    price: 18399,
+    mileage: 73627,
+    stockNumber: "KA004",
+    image:
+      "https://placehold.co/800x500/0a0a0a/D4AF37/png?text=WRX+STI",
+    status: "available",
+  },
+  {
+    id: "ka-005",
+    make: "Mercedes-Benz",
+    model: "AMG GLC 43",
+    year: 2018,
+    price: 22899,
+    mileage: 107096,
+    trim: "Coupe 4MATIC",
+    stockNumber: "KA005",
+    image:
+      "https://placehold.co/800x500/0a0a0a/C8C8C8/png?text=AMG+GLC+43",
+    status: "pending",
+  },
+  {
+    id: "ka-006",
+    make: "Honda",
+    model: "Accord",
+    year: 2016,
+    price: 11399,
+    mileage: 62193,
+    trim: "EX-L",
+    stockNumber: "KA006",
+    image:
+      "https://placehold.co/800x500/0a0a0a/CE1126/png?text=Accord+EX-L",
+    status: "available",
+  },
+  {
+    id: "ka-007",
+    make: "Subaru",
+    model: "Outback",
+    year: 2026,
+    price: 32999,
+    mileage: 186,
+    trim: "Premium",
+    stockNumber: "KA007",
+    image:
+      "https://placehold.co/800x500/0a0a0a/D4AF37/png?text=Outback",
+    status: "available",
+  },
+  {
+    id: "ka-008",
+    make: "Kia",
+    model: "K5",
+    year: 2021,
+    price: 22399,
+    mileage: 76258,
+    trim: "GT-Line",
+    stockNumber: "KA008",
+    image:
+      "https://placehold.co/800x500/0a0a0a/CE1126/png?text=Kia+K5",
+    status: "available",
+  },
+  {
+    id: "ka-009",
+    make: "Chevrolet",
+    model: "Tahoe",
+    year: 2018,
+    price: 17399,
+    mileage: 119031,
+    trim: "Commercial Fleet",
+    stockNumber: "KA009",
+    image:
+      "https://placehold.co/800x500/0a0a0a/D4AF37/png?text=Tahoe",
+    status: "available",
+  },
+];

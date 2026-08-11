@@ -1,0 +1,10 @@
+Stock,VIN,Year,Make,Model,Trim,Price,Mileage,Photo,Status
+KA001,2C3CDXJG9MH123456,2021,Dodge,Charger,Scat Pack RWD,29999,105999,https://placehold.co/800x500/0a0a0a/CE1126/png?text=2021+Charger,Available
+KA002,3TMCZ5AN5MM234567,2021,Toyota,Tacoma,TRD Sport,34499,64009,https://placehold.co/800x500/0a0a0a/D4AF37/png?text=2021+Tacoma,Available
+KA003,5YJ3E1EA4JF345678,2018,Tesla,Model 3,Long Range,21999,87881,https://placehold.co/800x500/0a0a0a/CE1126/png?text=Model+3,Available
+KA004,JF1VA2L60H8456789,2017,Subaru,WRX STI,,18399,73627,https://placehold.co/800x500/0a0a0a/D4AF37/png?text=WRX+STI,Available
+KA005,WDC0G4JB5JA456789,2018,Mercedes-Benz,AMG GLC 43,Coupe 4MATIC,22899,107096,https://placehold.co/800x500/0a0a0a/C8C8C8/png?text=AMG+GLC+43,Pending
+KA006,1HGCR2F30GA567890,2016,Honda,Accord,EX-L,11399,62193,https://placehold.co/800x500/0a0a0a/CE1126/png?text=Accord+EX-L,Available
+KA007,4S4BTACC5P3678901,2026,Subaru,Outback,Premium,32999,186,https://placehold.co/800x500/0a0a0a/D4AF37/png?text=Outback,Available
+KA008,5XXGT4L30MG678901,2021,Kia,K5,GT-Line,22399,76258,https://placehold.co/800x500/0a0a0a/CE1126/png?text=Kia+K5,Available
+KA009,1GNSCBKC0JR789012,2018,Chevrolet,Tahoe,Commercial Fleet,17399,119031,https://placehold.co/800x500/0a0a0a/D4AF37/png?text=Tahoe,Available
