@@ -1,59 +1,63 @@
 import { NextResponse } from "next/server";
 import {
-  formatCrmErrorForClient,
-  postToGoogleSheetsCrm,
-  type VehicleMatchLeadPayload,
-} from "@/lib/google-sheets-crm";
+  formatLeadErrorForClient,
+  postKingAutoLeadFromServer,
+} from "@/lib/king-auto-leads";
 
-interface CarRequestBody {
-  formType?: string;
+interface Body {
+  full_name?: string;
   fullName?: string;
   name?: string;
   phone?: string;
   email?: string;
+  vehicle_wanted?: string;
   vehicleWanted?: string;
   vehicleWant?: string;
+  budget_range?: string;
   budget?: string;
   notes?: string;
 }
 
 export async function POST(request: Request) {
-  let body: CarRequestBody;
-
+  let body: Body;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const fullName = (body.fullName ?? body.name)?.trim();
+  const full_name = (body.full_name ?? body.fullName ?? body.name)?.trim();
   const phone = body.phone?.trim();
   const email = body.email?.trim();
-  const vehicleWanted = (body.vehicleWanted ?? body.vehicleWant)?.trim();
+  const vehicle_wanted = (
+    body.vehicle_wanted ??
+    body.vehicleWanted ??
+    body.vehicleWant
+  )?.trim();
+  const budget_range = (body.budget_range ?? body.budget ?? "").trim();
+  const notes = (body.notes ?? "").trim();
 
-  if (!fullName || !phone || !email || !vehicleWanted) {
+  if (!full_name || !phone || !email || !vehicle_wanted) {
     return NextResponse.json(
       { error: "Name, phone, email, and vehicle description are required." },
       { status: 400 }
     );
   }
 
-  const payload: VehicleMatchLeadPayload = {
-    formType: "vehicle_match",
-    fullName,
-    phone,
-    email,
-    vehicleWanted,
-    budget: body.budget?.trim() || "",
-    notes: body.notes?.trim() || "",
-  };
-
   try {
-    await postToGoogleSheetsCrm(payload);
+    await postKingAutoLeadFromServer({
+      form_type: "vehicle_match_request",
+      full_name,
+      phone,
+      email,
+      vehicle_wanted,
+      budget_range,
+      notes,
+    });
   } catch (err) {
-    console.error("[car-request] Google Sheets CRM error:", err);
+    console.error("[vehicle-match] webhook error:", err);
     return NextResponse.json(
-      { error: formatCrmErrorForClient(err) },
+      { error: formatLeadErrorForClient(err) },
       { status: 502 }
     );
   }

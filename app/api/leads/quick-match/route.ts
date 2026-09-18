@@ -1,56 +1,59 @@
 import { NextResponse } from "next/server";
 import {
-  formatCrmErrorForClient,
-  postToGoogleSheetsCrm,
-  type QuickMatchLeadPayload,
-} from "@/lib/google-sheets-crm";
+  formatLeadErrorForClient,
+  postKingAutoLeadFromServer,
+} from "@/lib/king-auto-leads";
 
-interface QuickMatchBody {
-  formType?: string;
+interface Body {
+  full_name?: string;
   fullName?: string;
   phone?: string;
   email?: string;
+  vehicle_interest?: string;
   vehicleInterest?: string;
+  budget?: string;
+  credit_score?: string;
   creditScore?: string;
 }
 
 export async function POST(request: Request) {
-  let body: QuickMatchBody;
-
+  let body: Body;
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const fullName = body.fullName?.trim();
+  const full_name = (body.full_name ?? body.fullName)?.trim();
   const phone = body.phone?.trim();
   const email = body.email?.trim();
-  const vehicleInterest = body.vehicleInterest?.trim();
-  const creditScore = body.creditScore?.trim();
+  const vehicle_interest = (
+    body.vehicle_interest ?? body.vehicleInterest
+  )?.trim();
+  const budget = (body.budget ?? "").trim() || "Not specified";
+  const credit_score = (body.credit_score ?? body.creditScore)?.trim();
 
-  if (!fullName || !phone || !email || !vehicleInterest || !creditScore) {
+  if (!full_name || !phone || !email || !vehicle_interest || !credit_score) {
     return NextResponse.json(
-      { error: "All fields are required." },
+      { error: "Name, phone, email, vehicle interest, and credit score are required." },
       { status: 400 }
     );
   }
 
-  const payload: QuickMatchLeadPayload = {
-    formType: "quick_match",
-    fullName,
-    phone,
-    email,
-    vehicleInterest,
-    creditScore,
-  };
-
   try {
-    await postToGoogleSheetsCrm(payload);
+    await postKingAutoLeadFromServer({
+      form_type: "pre_approval",
+      full_name,
+      phone,
+      email,
+      vehicle_interest,
+      budget,
+      credit_score,
+    });
   } catch (err) {
-    console.error("[quick-match] Google Sheets CRM error:", err);
+    console.error("[pre-approval] webhook error:", err);
     return NextResponse.json(
-      { error: formatCrmErrorForClient(err) },
+      { error: formatLeadErrorForClient(err) },
       { status: 502 }
     );
   }

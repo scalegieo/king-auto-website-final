@@ -5,6 +5,7 @@ import {
   Phone,
 } from "lucide-react";
 import type { SVGProps } from "react";
+import { DEALERSHIP } from "@/lib/dealership";
 
 function InstagramIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -51,8 +52,8 @@ export function Footer() {
         <div>
           <BrandLogo size="lg" className="mb-4 max-w-[200px]" />
           <p className="text-neutral-400 text-sm leading-relaxed max-w-xs">
-            Premium used vehicles on Havana Street. Inventory synced from your
-            Dealr export feed.
+            Premium used vehicles on Havana Street. Live inventory powered by
+            Dealr.
           </p>
         </div>
 
@@ -65,7 +66,7 @@ export function Footer() {
               <li key={link.href}>
                 <a
                   href={link.href}
-                  className="text-neutral-300 hover:text-king-red transition-colors text-sm"
+                  className="inline-flex min-h-11 items-center text-neutral-300 hover:text-king-red transition-colors text-sm"
                 >
                   {link.label}
                 </a>
@@ -82,26 +83,26 @@ export function Footer() {
             <li className="flex gap-2">
               <MapPin className="w-4 h-4 text-king-red shrink-0 mt-0.5" />
               <a
-                href="https://maps.google.com/?q=2180+S+Havana+St+Aurora+CO+80014"
+                href={DEALERSHIP.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-white transition-colors"
               >
-                2180 S Havana St
+                {DEALERSHIP.addressLine1}
                 <br />
-                Aurora, CO 80014
+                {DEALERSHIP.addressLine2}
               </a>
             </li>
             <li className="flex gap-2 items-center">
               <Phone className="w-4 h-4 text-king-red shrink-0" />
-              <a href="tel:3035023022" className="hover:text-white">
-                (303) 502-3022
+              <a href={`tel:${DEALERSHIP.phoneTel}`} className="hover:text-white">
+                {DEALERSHIP.phoneDisplay}
               </a>
             </li>
             <li className="flex gap-2 items-center">
               <Mail className="w-4 h-4 text-king-red shrink-0" />
-              <a href="mailto:mykingauto@gmail.com" className="hover:text-white">
-                mykingauto@gmail.com
+              <a href={`mailto:${DEALERSHIP.email}`} className="hover:text-white">
+                {DEALERSHIP.email}
               </a>
             </li>
           </ul>
@@ -116,7 +117,7 @@ export function Footer() {
                 key={label}
                 href={href}
                 aria-label={label}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/15 text-neutral-300 hover:border-king-gold hover:text-king-gold transition-colors"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-white/15 text-neutral-300 hover:border-king-gold hover:text-king-gold transition-colors"
               >
                 <Icon className="w-4 h-4" />
               </a>

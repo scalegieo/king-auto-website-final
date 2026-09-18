@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
+import { DEALERSHIP } from "@/lib/dealership";
 
 type Msg = { role: "user" | "assistant"; text: string };
 
@@ -26,61 +27,6 @@ function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 }
 
-function replyTo(input: string): { text: string; navigate?: string } {
-  const q = input.toLowerCase().trim();
-
-  if (/inventor|car|vehicle|truck|suv|stock|lot/.test(q)) {
-    return {
-      text: "Here's our live inventory — filter by make, price, or year. Tap any vehicle to apply.",
-      navigate: "inventory",
-    };
-  }
-  if (/financ|loan|credit|approv|payment|pre-?approv/.test(q)) {
-    return {
-      text: "We can check financing in about 60 seconds. I'll take you to the form — fill it out and a specialist will follow up.",
-      navigate: "financing",
-    };
-  }
-  if (/hour|open|close|when|time/.test(q)) {
-    return {
-      text: "We're open Mon–Fri 10am–7pm, Sat 10am–6pm, Sunday by appointment. Want directions to Havana St?",
-      navigate: "visit",
-    };
-  }
-  if (/address|locat|direct|map|visit|where|havana|aurora|denver/.test(q)) {
-    return {
-      text: "We're at 2180 S Havana St, Aurora, CO 80014. Parking on site — I'll scroll you to Visit Us for hours and a map link.",
-      navigate: "visit",
-    };
-  }
-  if (/call|phone|number|contact/.test(q)) {
-    return {
-      text: "Call or text us at (303) 502-3022, or email mykingauto@gmail.com. Want me to open the text form?",
-    };
-  }
-  if (/about|who|king auto|story|lounge/.test(q)) {
-    return {
-      text: "King Auto Inc. is a Havana St dealership focused on transparent pricing, fast financing, and a VIP lounge experience. Scrolling to About.",
-      navigate: "about",
-    };
-  }
-  if (/price|cost|how much/.test(q)) {
-    return {
-      text: "Every vehicle lists a clear price on the inventory grid — no mystery fees. Jumping you there now.",
-      navigate: "inventory",
-    };
-  }
-  if (/help|hi|hello|hey|start/.test(q)) {
-    return {
-      text: "Hey — I'm the King Auto assistant. I can take you to inventory, financing, hours, or help you get in touch. What do you need?",
-    };
-  }
-
-  return {
-    text: "I can help with inventory, financing, hours, location, or contacting the team. Try “show trucks” or “get financed.”",
-  };
-}
-
 interface AIAssistantProps {
   onOpenFinancing?: () => void;
 }
@@ -89,6 +35,7 @@ export function AIAssistant({ onOpenFinancing }: AIAssistantProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [dailyNote, setDailyNote] = useState<string | null>(null);
   const [messages, setMessages] = useState<Msg[]>([
     {
       role: "assistant",
@@ -119,39 +66,91 @@ export function AIAssistant({ onOpenFinancing }: AIAssistantProps) {
       return;
     }
     if (action === "call") {
-      window.location.href = "tel:3035023022";
+      window.location.href = `tel:${DEALERSHIP.phoneTel}`;
       return;
     }
   }
 
-  function send(text: string) {
+  async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed || busy) return;
 
-    setMessages((m) => [...m, { role: "user", text: trimmed }]);
+    const nextMessages: Msg[] = [...messages, { role: "user", text: trimmed }];
+    setMessages(nextMessages);
     setInput("");
     setBusy(true);
+    setDailyNote(null);
 
-    const result = replyTo(trimmed);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: nextMessages.map((m) => ({
+            role: m.role,
+            content: m.text,
+          })),
+        }),
+      });
 
-    window.setTimeout(() => {
-      setMessages((m) => [...m, { role: "assistant", text: result.text }]);
-      setBusy(false);
-      if (result.navigate) {
+      const data = (await res.json()) as {
+        ok?: boolean;
+        message?: string;
+        error?: string;
+        code?: string;
+        navigate?: string;
+        dailyRemaining?: number;
+        dailyLimit?: number;
+      };
+
+      if (!res.ok || data.ok !== true || !data.message) {
+        const err =
+          data.error ||
+          `I couldn't reach the assistant right now. Call ${DEALERSHIP.phoneDisplay}.`;
+        setMessages((m) => [...m, { role: "assistant", text: err }]);
+        if (data.code === "daily_limit") {
+          setDailyNote(
+            data.dailyLimit
+              ? `Daily limit: ${data.dailyLimit} free AI messages.`
+              : "Daily free AI limit reached."
+          );
+        }
+        return;
+      }
+
+      setMessages((m) => [...m, { role: "assistant", text: data.message! }]);
+      if (
+        typeof data.dailyRemaining === "number" &&
+        typeof data.dailyLimit === "number" &&
+        data.dailyRemaining <= 5
+      ) {
+        setDailyNote(
+          `${data.dailyRemaining} free AI messages left today (${data.dailyLimit}/day).`
+        );
+      }
+
+      if (data.navigate) {
         window.setTimeout(() => {
-          if (result.navigate === "financing") onOpenFinancing?.();
-          scrollToId(result.navigate!);
-        }, 400);
+          if (data.navigate === "financing") onOpenFinancing?.();
+          scrollToId(data.navigate!);
+        }, 450);
       }
-      if (/text form|text us/i.test(result.text)) {
-        // offer handled in message; user can tap quick action
-      }
-    }, 450);
+    } catch {
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          text: `Network error — please try again or call ${DEALERSHIP.phoneDisplay}.`,
+        },
+      ]);
+    } finally {
+      setBusy(false);
+    }
   }
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    send(input);
+    void send(input);
   }
 
   return (
@@ -163,7 +162,7 @@ export function AIAssistant({ onOpenFinancing }: AIAssistantProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 12, scale: 0.96 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed bottom-[5.5rem] left-4 right-4 sm:left-auto sm:right-6 sm:bottom-24 z-[90] sm:w-[min(100vw-2rem,380px)] overflow-hidden rounded-xl border border-white/15 bg-charcoal-900 shadow-glass"
+            className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 right-3 sm:left-auto sm:right-6 sm:bottom-24 z-[90] sm:w-[min(100%,380px)] max-h-[min(70dvh,32rem)] flex flex-col overflow-hidden rounded-xl border border-white/15 bg-charcoal-900 shadow-glass"
             role="dialog"
             aria-label="King Auto help"
           >
@@ -173,21 +172,21 @@ export function AIAssistant({ onOpenFinancing }: AIAssistantProps) {
                 <div className="min-w-0">
                   <p className="text-sm font-semibold text-white">Need help?</p>
                   <p className="text-[11px] text-neutral-400 truncate">
-                    Inventory · financing · visit
+                    Free AI · inventory · financing
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 focus-ring"
+                className="inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 focus-ring"
                 aria-label="Close assistant"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="h-[280px] overflow-y-auto px-4 py-3 space-y-3">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 space-y-3">
               {messages.map((msg, i) => (
                 <div
                   key={`${msg.role}-${i}`}
@@ -210,13 +209,17 @@ export function AIAssistant({ onOpenFinancing }: AIAssistantProps) {
               <div ref={bottomRef} />
             </div>
 
-            <div className="px-3 pb-2 flex flex-wrap gap-1.5">
+            {dailyNote && (
+              <p className="px-4 pb-1 text-[11px] text-king-gold/90">{dailyNote}</p>
+            )}
+
+            <div className="px-3 pb-2 flex flex-wrap gap-1.5 shrink-0">
               {QUICK.map((q) => (
                 <button
                   key={q.action}
                   type="button"
-                  onClick={() => send(q.label)}
-                  className="rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-neutral-300 hover:border-king-gold hover:text-king-gold transition-colors"
+                  onClick={() => void send(q.label)}
+                  className="min-h-9 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[11px] text-neutral-300 hover:border-king-gold hover:text-king-gold transition-colors"
                 >
                   {q.label}
                 </button>
@@ -225,43 +228,43 @@ export function AIAssistant({ onOpenFinancing }: AIAssistantProps) {
 
             <form
               onSubmit={onSubmit}
-              className="flex items-center gap-2 border-t border-white/10 p-3"
+              className="flex items-center gap-2 border-t border-white/10 p-3 shrink-0"
             >
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask about cars, financing, hours…"
-                className="flex-1 rounded-xl bg-charcoal-950 border border-white/10 px-3 py-2.5 text-sm text-white placeholder:text-neutral-500 outline-none focus:border-king-gold"
+                className="min-h-11 flex-1 rounded-xl bg-charcoal-950 border border-white/10 px-3 py-2.5 text-base sm:text-sm text-white placeholder:text-neutral-500 outline-none focus:border-king-gold"
               />
               <button
                 type="submit"
                 disabled={busy || !input.trim()}
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-king-red text-white hover:bg-king-red-bright disabled:opacity-40 focus-ring"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-king-red text-white hover:bg-king-red-bright disabled:opacity-40 focus-ring"
                 aria-label="Send message"
               >
                 <Send className="w-4 h-4" />
               </button>
             </form>
 
-            <div className="flex border-t border-white/10 text-[11px]">
+            <div className="flex border-t border-white/10 text-[11px] shrink-0">
               <button
                 type="button"
                 onClick={() => handleAction("inventory")}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-neutral-400 hover:text-king-gold"
+                className="flex-1 flex min-h-11 items-center justify-center gap-1.5 py-2.5 text-neutral-400 hover:text-king-gold"
               >
                 <Car className="w-3.5 h-3.5" /> Inventory
               </button>
               <button
                 type="button"
                 onClick={() => handleAction("financing")}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-neutral-400 hover:text-king-gold border-x border-white/10"
+                className="flex-1 flex min-h-11 items-center justify-center gap-1.5 py-2.5 text-neutral-400 hover:text-king-gold border-x border-white/10"
               >
                 <CreditCard className="w-3.5 h-3.5" /> Finance
               </button>
               <button
                 type="button"
                 onClick={() => handleAction("visit")}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-neutral-400 hover:text-king-gold"
+                className="flex-1 flex min-h-11 items-center justify-center gap-1.5 py-2.5 text-neutral-400 hover:text-king-gold"
               >
                 <MapPin className="w-3.5 h-3.5" /> Visit
               </button>
@@ -270,21 +273,21 @@ export function AIAssistant({ onOpenFinancing }: AIAssistantProps) {
         )}
       </AnimatePresence>
 
-      <div className="fixed bottom-5 right-4 sm:right-6 z-[90] flex flex-col items-end gap-2 safe-bottom">
+      <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-3 sm:right-6 z-[90] flex flex-col items-end gap-2">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-king-red text-white shadow-red hover:bg-king-red-bright transition-colors focus-ring"
+          className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-king-red text-white shadow-red hover:bg-king-red-bright transition-colors focus-ring"
           aria-label={open ? "Close help" : "Open help"}
         >
           {open ? <X className="w-5 h-5" /> : <Headphones className="w-5 h-5" />}
         </button>
         <a
-          href="tel:3035023022"
-          className="sm:hidden flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-charcoal-950 text-king-gold"
+          href={`tel:${DEALERSHIP.phoneTel}`}
+          className="sm:hidden inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-charcoal-950/95 text-king-gold backdrop-blur-sm"
           aria-label="Call King Auto"
         >
-          <Phone className="w-5 h-5" />
+          <Phone className="w-4 h-4" />
         </a>
       </div>
     </>

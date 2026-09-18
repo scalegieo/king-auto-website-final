@@ -34,6 +34,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
     { media: "(prefers-color-scheme: light)", color: "#0a0a0a" },
@@ -62,10 +63,13 @@ export const metadata: Metadata = {
     "Aurora Colorado cars",
     "Pre-owned vehicles Denver",
     "Car financing Denver",
+    "Get pre-approved Denver",
+    "Car payment calculator Aurora",
     "Truck for sale Aurora",
     "SUV Denver metro",
     "2180 S Havana St",
     "mykingautoinc",
+    "King Auto Google reviews",
   ],
   alternates: {
     canonical: SITE_URL,
@@ -106,8 +110,8 @@ export const metadata: Metadata = {
   other: {
     "geo.region": "US-CO",
     "geo.placename": "Aurora, Colorado",
-    "geo.position": "39.6683;-104.8657",
-    ICBM: "39.6683, -104.8657",
+    "geo.position": "39.6769623;-104.8654679",
+    ICBM: "39.6769623, -104.8654679",
   },
 };
 

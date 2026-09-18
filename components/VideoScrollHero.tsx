@@ -1,18 +1,15 @@
 "use client";
 
 import { useRef } from "react";
-import {
-  HERO_SCROLL_HEIGHT_VH,
-  HERO_VIDEO_SRC,
-} from "@/lib/hero-video";
-
-const HERO_VIDEO_FALLBACK = "/hero/kling-fpv-scroll.mov";
+import { HERO_VIDEO_SRC } from "@/lib/hero-video";
 import { useScrollDrivenVideo } from "@/hooks/useScrollDrivenVideo";
 import {
   CinematicHeroHint,
   CinematicHeroIntro,
   CinematicHeroOutro,
 } from "@/components/hero/CinematicHeroOverlay";
+
+const HERO_VIDEO_FALLBACK = "/hero/kling-fpv-scroll.mov";
 
 export function VideoScrollHero() {
   const containerRef = useRef<HTMLElement>(null);
@@ -34,18 +31,17 @@ export function VideoScrollHero() {
       id="hero"
       ref={containerRef}
       data-hero="fpv-scroll-mp4"
-      className="relative w-full"
-      style={{ height: `${HERO_SCROLL_HEIGHT_VH}vh` }}
+      className="relative w-full h-[220vh] sm:h-[300vh] md:h-[380vh]"
       aria-label="King Auto cinematic introduction"
     >
-      <div className="sticky top-0 left-0 z-20 h-screen w-full overflow-hidden bg-black isolate">
+      <div className="sticky top-0 left-0 z-20 h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-black isolate">
         <div
           className="absolute inset-0 will-change-transform transform-gpu"
           style={{ transform: "translate3d(0,0,0)" }}
         >
           <video
             ref={videoRef}
-            className="absolute inset-0 h-full w-full object-cover scale-[1.02] grayscale-[0.25] contrast-[1.05] brightness-[0.92]"
+            className="absolute inset-0 h-full w-full object-cover object-center scale-[1.01] sm:scale-[1.02] grayscale-[0.25] contrast-[1.05] brightness-[0.92]"
             src={HERO_VIDEO_SRC}
             muted
             playsInline
@@ -79,7 +75,7 @@ export function VideoScrollHero() {
         <CinematicHeroHint ref={hintRef} />
 
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-24 bg-gradient-to-t from-charcoal-900/80 to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-20 sm:h-24 bg-gradient-to-t from-charcoal-900/80 to-transparent"
           aria-hidden
         />
       </div>

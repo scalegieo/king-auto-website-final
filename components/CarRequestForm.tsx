@@ -6,9 +6,13 @@ import { Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { BrandLogo } from "@/components/BrandLogo";
+import {
+  formatLeadErrorForClient,
+  submitKingAutoLead,
+} from "@/lib/king-auto-leads";
 
 const SUCCESS_MESSAGE =
-  "Thank you! We've received your request and will contact you shortly.";
+  "Thanks! We'll contact you when we find a match.";
 const ERROR_MESSAGE = "Something went wrong. Please try again.";
 
 function Field({
@@ -35,7 +39,7 @@ function Field({
         required={required}
         onChange={(e) => onChange(e.target.value)}
         placeholder=" "
-        className="peer w-full rounded-lg bg-charcoal-950/60 border border-white/15 px-4 pt-6 pb-2 text-white placeholder-transparent outline-none transition-colors focus:border-king-gold focus:ring-1 focus:ring-king-gold"
+        className="peer field-input placeholder-transparent"
       />
       <label
         htmlFor={id}
@@ -48,11 +52,11 @@ function Field({
 }
 
 export function CarRequestForm() {
-  const [name, setName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [vehicleWant, setVehicleWant] = useState("");
-  const [budget, setBudget] = useState("");
+  const [vehicleWanted, setVehicleWanted] = useState("");
+  const [budgetRange, setBudgetRange] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -67,42 +71,25 @@ export function CarRequestForm() {
     setSubmitting(true);
 
     try {
-      const payload = {
-        formType: "vehicle_match" as const,
-        fullName: name.trim(),
+      await submitKingAutoLead({
+        form_type: "vehicle_match_request",
+        full_name: fullName.trim(),
         phone: phone.trim(),
         email: email.trim(),
-        vehicleWanted: vehicleWant.trim(),
-        budget: budget.trim(),
+        vehicle_wanted: vehicleWanted.trim(),
+        budget_range: budgetRange.trim(),
         notes: notes.trim(),
-      };
-
-      const res = await fetch("/api/leads/car-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
       });
 
-      const data = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-      };
-
-      if (!res.ok || data.ok !== true) {
-        throw new Error(
-          typeof data.error === "string" ? data.error : ERROR_MESSAGE
-        );
-      }
-
-      setName("");
+      setFullName("");
       setPhone("");
       setEmail("");
-      setVehicleWant("");
-      setBudget("");
+      setVehicleWanted("");
+      setBudgetRange("");
       setNotes("");
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : ERROR_MESSAGE);
+      setError(formatLeadErrorForClient(err) || ERROR_MESSAGE);
     } finally {
       setSubmitting(false);
     }
@@ -116,17 +103,17 @@ export function CarRequestForm() {
       transition={{ duration: 0.4 }}
       className="max-w-3xl mx-auto"
     >
-      <Card strong className="p-6 sm:p-8 lg:p-10">
-        <div className="flex flex-col sm:flex-row sm:items-start gap-6 mb-8">
-          <BrandLogo size="md" className="max-w-[140px] shrink-0" />
-          <div>
+      <Card strong className="p-5 sm:p-8 lg:p-10">
+        <div className="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-6 mb-6 sm:mb-8">
+          <BrandLogo size="md" className="max-w-[120px] sm:max-w-[140px] shrink-0" />
+          <div className="min-w-0">
             <div className="flex items-center gap-2 text-king-gold mb-2">
-              <Search className="w-5 h-5" />
+              <Search className="w-5 h-5 shrink-0" />
               <p className="text-xs uppercase tracking-[0.2em]">
                 Vehicle match request
               </p>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            <h2 className="text-xl sm:text-3xl font-bold text-white tracking-tight text-balance">
               Didn&apos;t find the car you&apos;re looking for?
             </h2>
             <p className="mt-3 text-neutral-400 leading-relaxed">
@@ -136,16 +123,20 @@ export function CarRequestForm() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
+        <form
+          id="matchRequestForm"
+          onSubmit={handleSubmit}
+          className="grid gap-4 sm:grid-cols-2"
+        >
           <Field
-            id="car-req-name"
+            id="match_full_name"
             label="Full name"
-            value={name}
-            onChange={setName}
+            value={fullName}
+            onChange={setFullName}
             required
           />
           <Field
-            id="car-req-phone"
+            id="match_phone"
             label="Phone"
             type="tel"
             value={phone}
@@ -154,7 +145,7 @@ export function CarRequestForm() {
           />
           <div className="sm:col-span-2">
             <Field
-              id="car-req-email"
+              id="match_email"
               label="Email"
               type="email"
               value={email}
@@ -164,41 +155,41 @@ export function CarRequestForm() {
           </div>
           <div className="sm:col-span-2">
             <label
-              htmlFor="car-req-want"
+              htmlFor="match_vehicle_wanted"
               className="block text-[11px] uppercase tracking-wider text-neutral-500 mb-2"
             >
               What vehicle are you looking for? *
             </label>
             <textarea
-              id="car-req-want"
+              id="match_vehicle_wanted"
               required
               rows={3}
-              value={vehicleWant}
-              onChange={(e) => setVehicleWant(e.target.value)}
+              value={vehicleWanted}
+              onChange={(e) => setVehicleWanted(e.target.value)}
               placeholder="e.g. 2019–2021 Toyota Tacoma TRD, under 80k miles, white or gray…"
-              className="w-full rounded-lg bg-charcoal-950/60 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-neutral-500 outline-none focus:border-king-gold focus:ring-1 focus:ring-king-gold resize-none"
+              className="w-full rounded-lg bg-charcoal-950/60 border border-white/15 px-4 py-3 text-base sm:text-sm text-white placeholder:text-neutral-500 outline-none focus:border-king-gold focus:ring-1 focus:ring-king-gold resize-y min-h-[5.5rem]"
             />
           </div>
           <Field
-            id="car-req-budget"
+            id="match_budget_range"
             label="Budget range (optional)"
-            value={budget}
-            onChange={setBudget}
+            value={budgetRange}
+            onChange={setBudgetRange}
           />
           <div className="sm:col-span-2">
             <label
-              htmlFor="car-req-notes"
+              htmlFor="match_notes"
               className="block text-[11px] uppercase tracking-wider text-neutral-500 mb-2"
             >
               Anything else? (optional)
             </label>
             <textarea
-              id="car-req-notes"
+              id="match_notes"
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Timeline, trade-in, financing needs…"
-              className="w-full rounded-lg bg-charcoal-950/60 border border-white/15 px-4 py-3 text-sm text-white placeholder:text-neutral-500 outline-none focus:border-king-gold focus:ring-1 focus:ring-king-gold resize-none"
+              className="w-full rounded-lg bg-charcoal-950/60 border border-white/15 px-4 py-3 text-base sm:text-sm text-white placeholder:text-neutral-500 outline-none focus:border-king-gold focus:ring-1 focus:ring-king-gold resize-y min-h-[4rem]"
             />
           </div>
           {success && (
@@ -214,7 +205,7 @@ export function CarRequestForm() {
               type="submit"
               variant="primary"
               disabled={submitting}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto [&_button]:flex-1 [&_button]:min-h-12 sm:[&_button]:flex-none"
             >
               {submitting && (
                 <Loader2 className="w-4 h-4 animate-spin shrink-0" />

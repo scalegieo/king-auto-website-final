@@ -4,12 +4,7 @@ import { motion } from "framer-motion";
 import { Clock, Mail, MapPin, Navigation, Phone } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-
-const HOURS = [
-  { day: "Mon – Fri", time: "10:00 AM – 7:00 PM" },
-  { day: "Saturday", time: "10:00 AM – 6:00 PM" },
-  { day: "Sunday", time: "By appointment" },
-];
+import { DEALERSHIP } from "@/lib/dealership";
 
 export function VisitSection() {
   return (
@@ -23,9 +18,7 @@ export function VisitSection() {
           <p className="text-xs uppercase tracking-[0.2em] text-king-gold mb-3">
             Visit Us
           </p>
-          <h2 className="heading-display">
-            Come see the lot.
-          </h2>
+          <h2 className="heading-display">Come see the lot.</h2>
           <p className="mt-4 text-neutral-400 text-base sm:text-lg max-w-md">
             Walk the inventory, sit in the VIP lounge, and leave with clarity —
             not pressure.
@@ -33,31 +26,31 @@ export function VisitSection() {
 
           <div className="mt-8 space-y-4">
             <a
-              href="https://maps.google.com/?q=2180+S+Havana+St+Aurora+CO+80014"
+              href={DEALERSHIP.mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex gap-3 text-neutral-200 hover:text-king-gold transition-colors"
+              className="flex gap-3 min-h-11 text-neutral-200 hover:text-king-gold transition-colors"
             >
               <MapPin className="w-5 h-5 text-king-red shrink-0 mt-0.5" />
               <span>
-                2180 S Havana St
+                {DEALERSHIP.addressLine1}
                 <br />
-                Aurora, CO 80014
+                {DEALERSHIP.addressLine2}
               </span>
             </a>
             <a
-              href="tel:3035023022"
-              className="flex gap-3 items-center text-neutral-200 hover:text-king-gold transition-colors"
+              href={`tel:${DEALERSHIP.phoneTel}`}
+              className="flex gap-3 min-h-11 items-center text-neutral-200 hover:text-king-gold transition-colors"
             >
               <Phone className="w-5 h-5 text-king-red shrink-0" />
-              (303) 502-3022
+              {DEALERSHIP.phoneDisplay}
             </a>
             <a
-              href="mailto:mykingauto@gmail.com"
-              className="flex gap-3 items-center text-neutral-200 hover:text-king-gold transition-colors"
+              href={`mailto:${DEALERSHIP.email}`}
+              className="flex gap-3 min-h-11 items-center text-neutral-200 hover:text-king-gold transition-colors"
             >
               <Mail className="w-5 h-5 text-king-red shrink-0" />
-              mykingauto@gmail.com
+              {DEALERSHIP.email}
             </a>
           </div>
 
@@ -66,11 +59,7 @@ export function VisitSection() {
               variant="primary"
               showPlus
               onClick={() =>
-                window.open(
-                  "https://maps.google.com/?q=2180+S+Havana+St+Aurora+CO+80014",
-                  "_blank",
-                  "noopener,noreferrer"
-                )
+                window.open(DEALERSHIP.mapsUrl, "_blank", "noopener,noreferrer")
               }
             >
               Get Directions
@@ -89,14 +78,18 @@ export function VisitSection() {
               <Clock className="w-5 h-5 text-king-gold" />
               <h3 className="text-lg font-semibold text-white">Hours</h3>
             </div>
-            <ul className="space-y-4">
-              {HOURS.map((row) => (
+            <ul className="space-y-3">
+              {DEALERSHIP.hours.map((row) => (
                 <li
                   key={row.day}
-                  className="flex justify-between gap-4 border-b border-white/10 pb-3 last:border-0 last:pb-0"
+                  className="flex justify-between gap-4 border-b border-white/10 pb-2.5 last:border-0 last:pb-0"
                 >
                   <span className="text-neutral-400">{row.day}</span>
-                  <span className="text-white font-medium text-right">
+                  <span
+                    className={`font-medium text-right ${
+                      row.time === "Closed" ? "text-neutral-500" : "text-white"
+                    }`}
+                  >
                     {row.time}
                   </span>
                 </li>

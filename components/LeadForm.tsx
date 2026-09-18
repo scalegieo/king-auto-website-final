@@ -6,9 +6,13 @@ import { Loader2 } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import {
+  formatLeadErrorForClient,
+  submitKingAutoLead,
+} from "@/lib/king-auto-leads";
 
 const SUCCESS_MESSAGE =
-  "Thank you! We've received your request and will contact you shortly.";
+  "Thanks! We received your pre-approval request and will contact you shortly.";
 const ERROR_MESSAGE = "Something went wrong. Please try again.";
 
 const VEHICLE_OPTIONS = [
@@ -20,10 +24,10 @@ const VEHICLE_OPTIONS = [
   "Not sure yet",
 ];
 
-const CREDIT_RANGES = [
+const CREDIT_OPTIONS = [
   "Excellent (720+)",
-  "Good (680–719)",
-  "Fair (620–679)",
+  "Good (680-719)",
+  "Fair (620-679)",
   "Building credit",
   "Prefer not to say",
 ];
@@ -54,7 +58,7 @@ function FloatingField({
         required={required}
         onChange={(e) => onChange(e.target.value)}
         placeholder=" "
-        className="peer w-full rounded-lg bg-charcoal-950/60 border border-white/15 px-4 pt-6 pb-2 text-white placeholder-transparent outline-none transition-colors focus:border-king-gold focus:ring-1 focus:ring-king-gold"
+        className="peer field-input placeholder-transparent"
       />
       <label
         htmlFor={id}
@@ -90,7 +94,7 @@ function FloatingSelect({
         value={value}
         required={required}
         onChange={(e) => onChange(e.target.value)}
-        className="peer w-full appearance-none rounded-lg bg-charcoal-950/60 border border-white/15 px-4 pt-6 pb-2 text-white outline-none transition-colors focus:border-king-gold focus:ring-1 focus:ring-king-gold"
+        className="peer field-input appearance-none"
       >
         <option value="" disabled>
           Select…
@@ -115,28 +119,53 @@ function FloatingSelect({
   );
 }
 
+export type PreApproveDefaults = {
+  vehicleInterest?: string;
+  budget?: string;
+  creditScore?: string;
+};
+
 export function LeadForm({
+  defaults,
   defaultInterest,
   onClose,
+  modal = false,
 }: {
+  defaults?: PreApproveDefaults;
+  /** @deprecated use defaults.vehicleInterest */
   defaultInterest?: string;
   onClose?: () => void;
+  /** When true, tighten top padding for sticky close control */
+  modal?: boolean;
 }) {
-  const [name, setName] = useState("");
+  const initialInterest =
+    defaults?.vehicleInterest?.trim() || defaultInterest?.trim() || "";
+  const initialBudget = defaults?.budget?.trim() || "";
+  const initialCredit = defaults?.creditScore?.trim() || "";
+
+  const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [interest, setInterest] = useState(defaultInterest ?? "");
-  const [credit, setCredit] = useState("");
+  const [vehicleInterest, setVehicleInterest] = useState(initialInterest);
+  const [budget, setBudget] = useState(initialBudget);
+  const [creditScore, setCreditScore] = useState(initialCredit);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const vehicleOptions = useMemo(() => {
-    if (defaultInterest && !VEHICLE_OPTIONS.includes(defaultInterest)) {
-      return [defaultInterest, ...VEHICLE_OPTIONS];
+    if (initialInterest && !VEHICLE_OPTIONS.includes(initialInterest)) {
+      return [initialInterest, ...VEHICLE_OPTIONS];
     }
     return VEHICLE_OPTIONS;
-  }, [defaultInterest]);
+  }, [initialInterest]);
+
+  const creditOptions = useMemo(() => {
+    if (initialCredit && !CREDIT_OPTIONS.includes(initialCredit)) {
+      return [initialCredit, ...CREDIT_OPTIONS];
+    }
+    return CREDIT_OPTIONS;
+  }, [initialCredit]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -147,40 +176,25 @@ export function LeadForm({
     setSubmitting(true);
 
     try {
-      const payload = {
-        formType: "quick_match" as const,
-        fullName: name.trim(),
+      await submitKingAutoLead({
+        form_type: "pre_approval",
+        full_name: fullName.trim(),
         phone: phone.trim(),
         email: email.trim(),
-        vehicleInterest: interest.trim(),
-        creditScore: credit.trim(),
-      };
-
-      const res = await fetch("/api/leads/quick-match", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        vehicle_interest: vehicleInterest.trim(),
+        budget: budget.trim() || "Not specified",
+        credit_score: creditScore.trim(),
       });
 
-      const data = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        error?: string;
-      };
-
-      if (!res.ok || data.ok !== true) {
-        throw new Error(
-          typeof data.error === "string" ? data.error : ERROR_MESSAGE
-        );
-      }
-
-      setName("");
+      setFullName("");
       setPhone("");
       setEmail("");
-      setInterest(defaultInterest ?? "");
-      setCredit("");
+      setVehicleInterest(initialInterest);
+      setBudget(initialBudget);
+      setCreditScore(initialCredit);
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : ERROR_MESSAGE);
+      setError(formatLeadErrorForClient(err) || ERROR_MESSAGE);
     } finally {
       setSubmitting(false);
     }
@@ -193,31 +207,41 @@ export function LeadForm({
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
     >
-      <Card strong className="p-6 sm:p-8 lg:p-10">
-        <BrandLogo size="md" className="mb-6 max-w-[160px]" />
-        <div className="mb-8">
-          <p className="text-xs uppercase tracking-[0.18em] text-king-gold mb-3">
-            60-second match
+      <Card
+        strong
+        className={`p-5 sm:p-8 lg:p-10 ${modal ? "pt-3 sm:pt-8 rounded-none sm:rounded-2xl border-0 sm:border" : ""}`}
+      >
+        <BrandLogo
+          size="md"
+          className={`mb-4 sm:mb-6 max-w-[120px] sm:max-w-[160px] ${modal ? "mt-1" : ""}`}
+        />
+        <div className={`mb-5 sm:mb-8 ${modal ? "pr-10" : ""}`}>
+          <p className="text-xs uppercase tracking-[0.18em] text-king-gold mb-2 sm:mb-3">
+            Pre-approval
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            Find Your Ride in 60 Seconds.
+          <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight text-balance">
+            Get Pre-Approved Fast.
           </h2>
-          <p className="mt-3 text-neutral-400 max-w-lg">
-            Tell us what you&apos;re after — we&apos;ll check Havana St inventory
-            and financing in one pass.
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-neutral-400 max-w-lg">
+            Share a few details — we&apos;ll match you with lenders and Havana St
+            inventory that fits.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
+        <form
+          id="preApprovalForm"
+          onSubmit={handleSubmit}
+          className="grid gap-3.5 sm:gap-4 sm:grid-cols-2"
+        >
           <FloatingField
-            id="lead-name"
+            id="pre_full_name"
             label="Full name"
-            value={name}
-            onChange={setName}
+            value={fullName}
+            onChange={setFullName}
             required
           />
           <FloatingField
-            id="lead-phone"
+            id="pre_phone"
             label="Phone"
             type="tel"
             value={phone}
@@ -226,7 +250,7 @@ export function LeadForm({
           />
           <div className="sm:col-span-2">
             <FloatingField
-              id="lead-email"
+              id="pre_email"
               label="Email"
               type="email"
               value={email}
@@ -235,21 +259,29 @@ export function LeadForm({
             />
           </div>
           <FloatingSelect
-            id="lead-interest"
+            id="pre_vehicle_interest"
             label="Vehicle interest"
-            value={interest}
-            onChange={setInterest}
+            value={vehicleInterest}
+            onChange={setVehicleInterest}
             options={vehicleOptions}
             required
           />
-          <FloatingSelect
-            id="lead-credit"
-            label="Credit score range"
-            value={credit}
-            onChange={setCredit}
-            options={CREDIT_RANGES}
-            required
+          <FloatingField
+            id="pre_budget"
+            label="Budget (e.g. ~$400/mo)"
+            value={budget}
+            onChange={setBudget}
           />
+          <div className="sm:col-span-2">
+            <FloatingSelect
+              id="pre_credit_score"
+              label="Credit score range"
+              value={creditScore}
+              onChange={setCreditScore}
+              options={creditOptions}
+              required
+            />
+          </div>
           {success && (
             <p className="sm:col-span-2 text-sm text-emerald-400">
               {SUCCESS_MESSAGE}
@@ -258,18 +290,18 @@ export function LeadForm({
           {error && (
             <p className="sm:col-span-2 text-sm text-king-red">{error}</p>
           )}
-          <div className="sm:col-span-2 mt-2">
+          <div className="sm:col-span-2 mt-2 pb-2">
             <Button
               type="submit"
               variant="primary"
               showPlus
               disabled={submitting}
-              className="w-full sm:w-auto [&_button]:flex-1 sm:[&_button]:flex-none"
+              className="w-full sm:w-auto [&_button]:flex-1 [&_button]:min-h-12 sm:[&_button]:flex-none"
             >
               {submitting && (
                 <Loader2 className="w-4 h-4 animate-spin shrink-0" />
               )}
-              {submitting ? "Submitting..." : "Check Availability"}
+              {submitting ? "Submitting..." : "Submit pre-approval"}
             </Button>
             <p className="mt-3 text-xs text-neutral-500">
               By submitting, you agree to be contacted about inventory and

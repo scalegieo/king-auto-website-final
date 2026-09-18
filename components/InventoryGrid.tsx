@@ -1,170 +1,127 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Filter, SlidersHorizontal } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import type { Vehicle } from "@/lib/api";
-import { VehicleCard } from "@/components/VehicleCard";
+import { ArrowLeft, ExternalLink, Maximize2 } from "lucide-react";
 
-interface InventoryGridProps {
-  vehicles: Vehicle[];
-  onApply: (vehicle: Vehicle) => void;
-}
+const DEALR_INVENTORY_SRC = "https://staging.dealr.website/39483";
 
-export function InventoryGrid({ vehicles, onApply }: InventoryGridProps) {
-  const makes = useMemo(
-    () => Array.from(new Set(vehicles.map((v) => v.make))).sort(),
-    [vehicles]
-  );
+export function InventoryGrid() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [iframeKey, setIframeKey] = useState(0);
 
-  const [make, setMake] = useState("all");
-  const [model, setModel] = useState("");
-  const [priceMax, setPriceMax] = useState(50000);
-  const [yearMin, setYearMin] = useState(2015);
-
-  const models = useMemo(() => {
-    const pool =
-      make === "all" ? vehicles : vehicles.filter((v) => v.make === make);
-    return Array.from(new Set(pool.map((v) => v.model))).sort();
-  }, [vehicles, make]);
-
-  const filtered = useMemo(() => {
-    return vehicles.filter((v) => {
-      if (make !== "all" && v.make !== make) return false;
-      if (model && v.model !== model) return false;
-      if (v.price > priceMax) return false;
-      if (v.year < yearMin) return false;
-      return true;
-    });
-  }, [vehicles, make, model, priceMax, yearMin]);
+  const backToLot = useCallback(() => {
+    const frame = iframeRef.current;
+    if (frame) {
+      try {
+        frame.src = DEALR_INVENTORY_SRC;
+      } catch {
+        setIframeKey((k) => k + 1);
+      }
+    } else {
+      setIframeKey((k) => k + 1);
+    }
+  }, []);
 
   return (
-    <section id="inventory" className="relative section-pad py-14 sm:py-20 md:py-28">
-      <div className="absolute inset-0 bg-brand-glow pointer-events-none" />
+    <section
+      id="inventory"
+      className="relative border-y border-white/[0.06] bg-black"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 bg-brand-glow opacity-80"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[min(100%,40rem)] -translate-x-1/2 rounded-full bg-king-red/15 blur-[90px]"
+        aria-hidden
+      />
 
-      <div className="relative max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-8 sm:mb-14"
-        >
-          <p className="text-xs uppercase tracking-[0.2em] text-king-gold mb-3">
-            Live inventory
-          </p>
-          <h2 className="heading-display">
-            Ready when you are.
-          </h2>
-          <p className="mt-4 max-w-2xl text-neutral-400 text-base sm:text-lg">
-            Active units from your Dealr inventory export — updated on a regular
-            schedule. Filter by make, model, price, and year.
-          </p>
-        </motion.div>
-
-        {/* Filter bar */}
-        <div className="glass rounded-xl p-4 sm:p-5 mb-10">
-          <div className="flex items-center gap-2 mb-4 text-sm text-neutral-300">
-            <SlidersHorizontal className="w-4 h-4 text-king-gold" />
-            <span className="font-medium">Filter inventory</span>
-            <span className="ml-auto text-xs text-neutral-500">
-              {filtered.length} vehicles
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <label className="block">
-              <span className="sr-only">Make</span>
-              <select
-                value={make}
-                onChange={(e) => {
-                  setMake(e.target.value);
-                  setModel("");
-                }}
-                className="w-full rounded-lg bg-charcoal-950/70 border border-white/10 px-3 py-2.5 text-sm text-white outline-none focus:border-king-gold"
-              >
-                <option value="all">All makes</option>
-                {makes.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="sr-only">Model</span>
-              <select
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                className="w-full rounded-lg bg-charcoal-950/70 border border-white/10 px-3 py-2.5 text-sm text-white outline-none focus:border-king-gold"
-              >
-                <option value="">All models</option>
-                {models.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block">
-              <span className="mb-1.5 block text-[11px] uppercase tracking-wider text-neutral-500">
-                Max price · ${priceMax.toLocaleString()}
+      {/* Header stays padded; iframe goes full-bleed on mobile */}
+      <div className="relative section-pad pt-12 pb-6 sm:pt-16 sm:pb-8 md:pt-24">
+        <div className="mx-auto max-w-[1400px]">
+          <motion.header
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-king-gold/35 bg-king-gold/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-king-gold">
+                <span className="relative flex h-1.5 w-1.5" aria-hidden>
+                  <span className="absolute inset-0 animate-ping rounded-full bg-king-red opacity-70" />
+                  <span className="relative h-1.5 w-1.5 rounded-full bg-king-red" />
+                </span>
+                Live on lot
               </span>
-              <input
-                type="range"
-                min={8000}
-                max={50000}
-                step={1000}
-                value={priceMax}
-                onChange={(e) => setPriceMax(Number(e.target.value))}
-                className="w-full accent-king-red"
-              />
-            </label>
+              <p className="font-display text-[0.65rem] uppercase tracking-[0.35em] text-neutral-400 sm:text-xs">
+                Havana St inventory
+              </p>
+            </div>
 
-            <label className="block">
-              <span className="mb-1.5 block text-[11px] uppercase tracking-wider text-neutral-500">
-                Min year · {yearMin}
-              </span>
-              <input
-                type="range"
-                min={2010}
-                max={2026}
-                step={1}
-                value={yearMin}
-                onChange={(e) => setYearMin(Number(e.target.value))}
-                className="w-full accent-king-red"
-              />
-            </label>
-          </div>
+            <h2 className="font-display text-[clamp(2rem,8vw,4.25rem)] font-bold italic uppercase leading-[0.95] tracking-[0.02em] text-white">
+              The lot.{" "}
+              <span className="text-king-red">Updated</span>{" "}
+              <span className="text-king-gold">live.</span>
+            </h2>
+            <p className="mt-3 max-w-xl text-sm leading-relaxed text-neutral-400 sm:mt-4 sm:text-base">
+              Browse, open a vehicle, then use{" "}
+              <span className="text-neutral-200">Back to lot</span> anytime —
+              especially on phones.
+            </p>
+          </motion.header>
+        </div>
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.05 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="relative mx-auto w-full max-w-[1400px] sm:px-8 lg:px-12 xl:px-16 sm:pb-16 md:pb-24"
+      >
+        {/* Controls — always outside iframe so never covered */}
+        <div className="flex items-center gap-2 border-y border-white/10 bg-charcoal-950 px-3 py-2.5 sm:rounded-t-2xl sm:border sm:border-b-0 sm:border-white/10 sm:px-4">
+          <button
+            type="button"
+            onClick={backToLot}
+            className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:border-king-gold/50 hover:text-king-gold focus-ring sm:flex-none sm:px-4"
+          >
+            <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
+            Back to lot
+          </button>
+          <a
+            href={DEALR_INVENTORY_SRC}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-king-gold/30 bg-king-gold/10 px-3 py-2.5 text-sm font-semibold text-king-gold transition-colors hover:bg-king-gold/20 focus-ring sm:px-4"
+          >
+            <Maximize2 className="h-4 w-4 shrink-0 sm:hidden" aria-hidden />
+            <ExternalLink className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden />
+            <span className="sm:hidden">Full screen</span>
+            <span className="hidden sm:inline">Open full inventory</span>
+          </a>
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="glass rounded-xl p-12 text-center">
-            <Filter className="mx-auto w-8 h-8 text-neutral-500 mb-3" />
-            <p className="text-neutral-300">
-              No vehicles match those filters.
-            </p>
-            <a
-              href="#car-request"
-              className="mt-4 inline-block text-sm font-medium text-king-gold hover:text-white transition-colors"
-            >
-              Tell us what you&apos;re looking for →
-            </a>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6">
-            {filtered.map((vehicle, i) => (
-              <VehicleCard
-                key={vehicle.id}
-                vehicle={vehicle}
-                index={i}
-                onApply={onApply}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+        {/* Full-bleed on mobile = less “zoomed”, Dealr UI fits */}
+        <div className="relative bg-charcoal-900 sm:overflow-hidden sm:rounded-b-2xl sm:border sm:border-t-0 sm:border-white/10">
+          <div className="h-0.5 w-full bg-gradient-to-r from-king-red via-king-gold to-king-red sm:hidden" />
+          <iframe
+            key={iframeKey}
+            ref={iframeRef}
+            src={DEALR_INVENTORY_SRC}
+            title="Vehicle Inventory"
+            className="block w-full border-0 bg-charcoal-900 h-[100dvh] sm:h-[min(110dvh,1000px)] md:h-[min(120dvh,1100px)]"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allow="fullscreen"
+          />
+          <div
+            className="hidden h-1 w-full bg-gradient-to-r from-king-red via-king-gold to-king-red sm:block"
+            aria-hidden
+          />
+        </div>
+      </motion.div>
     </section>
   );
 }

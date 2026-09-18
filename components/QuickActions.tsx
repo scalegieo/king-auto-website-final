@@ -14,7 +14,7 @@ const ACTIONS = [
   {
     href: "#financing",
     label: "Get Financed",
-    desc: "Start your application online",
+    desc: "Budget slider & pre-approval",
     icon: CreditCard,
   },
   {
@@ -27,17 +27,21 @@ const ACTIONS = [
 
 export function QuickActions() {
   return (
-    <section className="section-pad py-10 sm:py-14 md:py-16 bg-charcoal-900 border-b border-white/10">
+    <section className="section-pad py-8 sm:py-14 md:py-16 bg-charcoal-900 border-b border-white/10">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {ACTIONS.map((action) => (
-          <Link key={action.href} href={action.href} className="group focus-ring rounded-xl">
-            <Card className="h-full p-6 transition-colors duration-300 hover:border-king-gold/35">
-              <action.icon className="w-6 h-6 text-king-red mb-4" />
-              <h3 className="text-lg font-semibold text-white group-hover:text-king-gold transition-colors">
+          <Link
+            key={action.href}
+            href={action.href}
+            className="group focus-ring rounded-xl"
+          >
+            <Card className="h-full p-5 sm:p-6 transition-colors duration-300 hover:border-king-gold/35 active:border-king-gold/50 min-h-[7.5rem]">
+              <action.icon className="w-6 h-6 text-king-red mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-semibold text-white group-hover:text-king-gold transition-colors">
                 {action.label}
               </h3>
-              <p className="mt-2 text-sm text-neutral-400">{action.desc}</p>
-              <span className="mt-4 text-xs font-semibold uppercase tracking-wider text-king-gold">
+              <p className="mt-1.5 sm:mt-2 text-sm text-neutral-400">{action.desc}</p>
+              <span className="mt-3 sm:mt-4 inline-block text-xs font-semibold uppercase tracking-wider text-king-gold">
                 Learn more →
               </span>
             </Card>
