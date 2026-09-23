@@ -1,16 +1,13 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import ffmpegPath from "ffmpeg-static";
 
 const root = path.resolve(import.meta.dirname, "..");
 const input = path.join(root, "public/hero/kling-fpv-scroll.mov");
 const output = path.join(root, "public/hero/kling-fpv-scroll-scrub.mp4");
 
-if (!ffmpegPath) {
-  console.error("ffmpeg-static binary not found");
-  process.exit(1);
-}
+// System ffmpeg only (brew install ffmpeg). Not an npm dep — Vercel stays light.
+const ffmpegPath = "ffmpeg";
 
 if (!fs.existsSync(input)) {
   console.error(`Missing source video: ${input}`);
@@ -50,6 +47,9 @@ const result = spawnSync(
 );
 
 if (result.status !== 0) {
+  console.error(
+    "ffmpeg failed. Install it locally (e.g. brew install ffmpeg) and retry."
+  );
   process.exit(result.status ?? 1);
 }
 
