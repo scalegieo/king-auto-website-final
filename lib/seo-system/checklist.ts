@@ -103,7 +103,7 @@ export function checklistItems(): ChecklistItem[] {
       owner: "site",
       text: `Scan the lot for ${week.theme}. Missing descriptions are filled. Titles wait for approval.`,
     });
-    for (const [index, text] of (YOU[week.week] || []).entries()) {
+    for (const [index, text] of Array.from((YOU[week.week] || []).entries())) {
       items.push({
         id: `w${week.week}-you-${index}`,
         week: week.week,
