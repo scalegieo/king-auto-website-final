@@ -16,8 +16,9 @@ import { PreApproveModal } from "@/components/PreApproveModal";
 import { AIAssistant } from "@/components/AIAssistant";
 import type { PreApproveDefaults } from "@/components/LeadForm";
 import { DEALERSHIP } from "@/lib/dealership";
+import type { Vehicle } from "@/lib/inventory/types";
 
-export function HomePage() {
+export function HomePage({ vehicles = [] }: { vehicles?: Vehicle[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [preDefaults, setPreDefaults] = useState<PreApproveDefaults>({});
 
@@ -52,7 +53,7 @@ export function HomePage() {
             showroom.
           </p>
           <QuickActions />
-          <InventoryGrid />
+          <InventoryGrid vehicles={vehicles} />
           <HowItWorks />
           <PreQualifySection onPreApprove={openPreApprove} />
           <section

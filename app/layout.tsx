@@ -1,7 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Bebas_Neue, Cinzel, Poppins } from "next/font/google";
 import "./globals.css";
+import { AnalyticsBeacon } from "@/components/AnalyticsBeacon";
 import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/dealership";
+import { HOME_DESCRIPTION, HOME_TITLE } from "@/lib/site-metadata";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -24,12 +28,6 @@ const cinzel = Cinzel({
   display: "swap",
 });
 
-const SITE_URL = "https://www.mykingautoinc.com";
-const TITLE =
-  "King Auto Inc. | Used Cars Denver & Aurora · Havana St Dealership";
-const DESCRIPTION =
-  "King Auto Inc. sells premium used cars, trucks, and SUVs on Havana Street in Aurora, CO — serving Denver metro drivers. Transparent pricing, fast financing, and live inventory. Visit 2180 S Havana St or call (303) 502-3022.";
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -44,10 +42,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: TITLE,
+    default: HOME_TITLE,
     template: "%s | King Auto Inc.",
   },
-  description: DESCRIPTION,
+  description: HOME_DESCRIPTION,
   applicationName: "King Auto Inc.",
   authors: [{ name: "King Auto Inc.", url: SITE_URL }],
   creator: "King Auto Inc.",
@@ -68,6 +66,9 @@ export const metadata: Metadata = {
     "Truck for sale Aurora",
     "SUV Denver metro",
     "2180 S Havana St",
+    "Aurora CO 80014",
+    "used cars 80014",
+    "shopkingauto",
     "mykingautoinc",
     "King Auto Google reviews",
   ],
@@ -75,8 +76,8 @@ export const metadata: Metadata = {
     canonical: SITE_URL,
   },
   openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     url: SITE_URL,
     siteName: "King Auto Inc.",
     locale: "en_US",
@@ -92,8 +93,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: TITLE,
-    description: DESCRIPTION,
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
     images: ["/brand/og.png"],
   },
   robots: {
@@ -115,6 +116,19 @@ export const metadata: Metadata = {
   },
 };
 
+function GoogleAnalytics() {
+  const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim() || "";
+  if (!/^G-[A-Z0-9]+$/.test(measurementId)) return null;
+  return (
+    <>
+      <Script src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`} strategy="afterInteractive" />
+      <Script id="ga4" strategy="afterInteractive">
+        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${measurementId}');`}
+      </Script>
+    </>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -126,6 +140,8 @@ export default function RootLayout({
         className={`${poppins.variable} ${bebas.variable} ${cinzel.variable} font-sans antialiased bg-black text-white`}
       >
         <JsonLd />
+        <AnalyticsBeacon />
+        <GoogleAnalytics />
         {children}
       </body>
     </html>

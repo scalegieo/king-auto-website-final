@@ -221,7 +221,7 @@ export function PreQualifySection({ onPreApprove }: PreQualifySectionProps) {
                   Get pre-approved
                 </Button>
                 <a
-                  href="#inventory"
+                  href="/inventory"
                   className="inline-flex min-h-12 items-center justify-center rounded-md border border-white/20 px-5 text-xs font-semibold uppercase tracking-[0.08em] text-white transition-colors hover:border-king-gold hover:text-king-gold focus-ring"
                 >
                   Shop in budget

@@ -1,5 +1,8 @@
 /** Shared dealership contact — keep Visit / Footer / SEO / AI in sync. */
 
+/** Public site. Verified live; mykingautoinc.com does not present a matching certificate. */
+export const SITE_URL = "https://www.shopkingauto.com";
+
 export const DEALERSHIP = {
   name: "King Auto Inc.",
   phoneDisplay: "(303) 502-3022",
@@ -9,6 +12,11 @@ export const DEALERSHIP = {
   email: "mykingauto@gmail.com",
   addressLine1: "2180 S Havana St",
   addressLine2: "Aurora, CO 80014",
+  city: "Aurora",
+  region: "CO",
+  regionName: "Colorado",
+  postalCode: "80014",
+  country: "US",
   mapsUrl:
     "https://www.google.com/maps/place/King+Auto+Inc/@39.6769623,-104.8680482,17z/data=!3m1!4b1!4m6!3m5!1s0x876c7d0a8adbba49:0x66b0603228ca10aa!8m2!3d39.6769623!4d-104.8654679!16s%2Fg%2F11mstyqj7w?entry=ttu&g_ep=EgoyMDI2MDkxNS4wIKXMDSoASAFQAw%3D%3D",
   hours: [

@@ -12,9 +12,9 @@ export const CinematicHeroIntro = forwardRef<HTMLDivElement>(
         className="absolute inset-0 z-20 flex flex-col items-center justify-center px-5 sm:px-6 text-center pointer-events-none will-change-transform"
         style={{ opacity: 1 }}
       >
-        <p className="font-display text-[clamp(0.65rem,2.2vw,0.95rem)] uppercase tracking-[0.28em] sm:tracking-[0.48em] text-king-gold font-bold italic mb-3 sm:mb-6 px-1">
-          Premium Vehicles
-        </p>
+        <h1 className="font-display text-[clamp(0.65rem,2.2vw,0.95rem)] uppercase tracking-[0.28em] sm:tracking-[0.48em] text-king-gold font-bold italic mb-3 sm:mb-6 px-1">
+          Used Cars in Aurora, CO 80014
+        </h1>
         <p className="font-display text-[clamp(1.45rem,6.2vw,3.35rem)] font-bold italic uppercase tracking-[0.04em] sm:tracking-[0.1em] text-white leading-[1.08] max-w-[min(100%,42rem)] drop-shadow-[0_2px_24px_rgba(0,0,0,0.55)] px-1">
           Luxury.{" "}
           <span className="text-king-red">Performance.</span>{" "}

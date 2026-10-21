@@ -3,25 +3,22 @@
 import { useCallback, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ExternalLink, Maximize2 } from "lucide-react";
+import { VehicleCard } from "@/components/VehicleCard";
+import { DEALERSHIP } from "@/lib/dealership";
+import type { Vehicle } from "@/lib/inventory/types";
 
 const DEALR_INVENTORY_SRC = "https://staging.dealr.website/39483";
+const PLACE = `${DEALERSHIP.city}, ${DEALERSHIP.region} ${DEALERSHIP.postalCode}`;
 
-export function InventoryGrid() {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [iframeKey, setIframeKey] = useState(0);
-
-  const backToLot = useCallback(() => {
-    const frame = iframeRef.current;
-    if (frame) {
-      try {
-        frame.src = DEALR_INVENTORY_SRC;
-      } catch {
-        setIframeKey((k) => k + 1);
-      }
-    } else {
-      setIframeKey((k) => k + 1);
-    }
-  }, []);
+export function InventoryGrid({
+  vehicles = [],
+  variant = "home",
+}: {
+  vehicles?: Vehicle[];
+  variant?: "home" | "page";
+}) {
+  const hasVehicles = vehicles.length > 0;
+  const Heading = variant === "page" ? "h1" : "h2";
 
   return (
     <section
@@ -37,7 +34,6 @@ export function InventoryGrid() {
         aria-hidden
       />
 
-      {/* Header stays padded; iframe goes full-bleed on mobile */}
       <div className="relative section-pad pt-12 pb-6 sm:pt-16 sm:pb-8 md:pt-24">
         <div className="mx-auto max-w-[1400px]">
           <motion.header
@@ -55,73 +51,114 @@ export function InventoryGrid() {
                 Live on lot
               </span>
               <p className="font-display text-[0.65rem] uppercase tracking-[0.35em] text-neutral-400 sm:text-xs">
-                Havana St inventory
+                {PLACE}
               </p>
             </div>
 
-            <h2 className="font-display text-[clamp(2rem,8vw,4.25rem)] font-bold italic uppercase leading-[0.95] tracking-[0.02em] text-white">
-              The lot.{" "}
-              <span className="text-king-red">Updated</span>{" "}
-              <span className="text-king-gold">live.</span>
-            </h2>
+            <Heading className="font-display text-[clamp(2rem,8vw,4.25rem)] font-bold italic uppercase leading-[0.95] tracking-[0.02em] text-white">
+              {variant === "page" ? (
+                <>
+                  Used cars for sale in{" "}
+                  <span className="text-king-gold">{PLACE}</span>
+                </>
+              ) : (
+                <>
+                  The lot.{" "}
+                  <span className="text-king-red">Updated</span>{" "}
+                  <span className="text-king-gold">live.</span>
+                </>
+              )}
+            </Heading>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-neutral-400 sm:mt-4 sm:text-base">
-              Browse, open a vehicle, then use{" "}
-              <span className="text-neutral-200">Back to lot</span> anytime —
-              especially on phones.
+              {hasVehicles
+                ? `Open any vehicle for the year, make, model, price, and stock — listed at ${DEALERSHIP.addressLine1}, ${PLACE}.`
+                : "Browse the Havana Street lot, then use Back to lot anytime — especially on phones."}
             </p>
           </motion.header>
         </div>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.05 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto w-full max-w-[1400px] sm:px-8 lg:px-12 xl:px-16 sm:pb-16 md:pb-24"
-      >
-        {/* Controls — always outside iframe so never covered */}
-        <div className="flex items-center gap-2 border-y border-white/10 bg-charcoal-950 px-3 py-2.5 sm:rounded-t-2xl sm:border sm:border-b-0 sm:border-white/10 sm:px-4">
-          <button
-            type="button"
-            onClick={backToLot}
-            className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:border-king-gold/50 hover:text-king-gold focus-ring sm:flex-none sm:px-4"
-          >
-            <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
-            Back to lot
-          </button>
-          <a
-            href={DEALR_INVENTORY_SRC}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-king-gold/30 bg-king-gold/10 px-3 py-2.5 text-sm font-semibold text-king-gold transition-colors hover:bg-king-gold/20 focus-ring sm:px-4"
-          >
-            <Maximize2 className="h-4 w-4 shrink-0 sm:hidden" aria-hidden />
-            <ExternalLink className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden />
-            <span className="sm:hidden">Full screen</span>
-            <span className="hidden sm:inline">Open full inventory</span>
-          </a>
+      {hasVehicles ? (
+        <div className="relative mx-auto w-full max-w-[1400px] px-4 pb-16 sm:px-8 sm:pb-16 md:pb-24 lg:px-12 xl:px-16">
+          <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {vehicles.map((vehicle, index) => (
+              <li key={vehicle.id}>
+                <VehicleCard vehicle={vehicle} index={index} />
+              </li>
+            ))}
+          </ul>
         </div>
-
-        {/* Full-bleed on mobile = less “zoomed”, Dealr UI fits */}
-        <div className="relative bg-charcoal-900 sm:overflow-hidden sm:rounded-b-2xl sm:border sm:border-t-0 sm:border-white/10">
-          <div className="h-0.5 w-full bg-gradient-to-r from-king-red via-king-gold to-king-red sm:hidden" />
-          <iframe
-            key={iframeKey}
-            ref={iframeRef}
-            src={DEALR_INVENTORY_SRC}
-            title="Vehicle Inventory"
-            className="block w-full border-0 bg-charcoal-900 h-[100dvh] sm:h-[min(110dvh,1000px)] md:h-[min(120dvh,1100px)]"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            allow="fullscreen"
-          />
-          <div
-            className="hidden h-1 w-full bg-gradient-to-r from-king-red via-king-gold to-king-red sm:block"
-            aria-hidden
-          />
-        </div>
-      </motion.div>
+      ) : (
+        <DealrFrame />
+      )}
     </section>
+  );
+}
+
+function DealrFrame() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [iframeKey, setIframeKey] = useState(0);
+
+  const backToLot = useCallback(() => {
+    const frame = iframeRef.current;
+    if (frame) {
+      try {
+        frame.src = DEALR_INVENTORY_SRC;
+      } catch {
+        setIframeKey((k) => k + 1);
+      }
+    } else {
+      setIframeKey((k) => k + 1);
+    }
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.05 }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className="relative mx-auto w-full max-w-[1400px] sm:px-8 lg:px-12 xl:px-16 sm:pb-16 md:pb-24"
+    >
+      <div className="flex items-center gap-2 border-y border-white/10 bg-charcoal-950 px-3 py-2.5 sm:rounded-t-2xl sm:border sm:border-b-0 sm:border-white/10 sm:px-4">
+        <button
+          type="button"
+          onClick={backToLot}
+          className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:border-king-gold/50 hover:text-king-gold focus-ring sm:flex-none sm:px-4"
+        >
+          <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
+          Back to lot
+        </button>
+        <a
+          href={DEALR_INVENTORY_SRC}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-king-gold/30 bg-king-gold/10 px-3 py-2.5 text-sm font-semibold text-king-gold transition-colors hover:bg-king-gold/20 focus-ring sm:px-4"
+        >
+          <Maximize2 className="h-4 w-4 shrink-0 sm:hidden" aria-hidden />
+          <ExternalLink className="hidden h-4 w-4 shrink-0 sm:block" aria-hidden />
+          <span className="sm:hidden">Full screen</span>
+          <span className="hidden sm:inline">Open full inventory</span>
+        </a>
+      </div>
+
+      <div className="relative bg-charcoal-900 sm:overflow-hidden sm:rounded-b-2xl sm:border sm:border-t-0 sm:border-white/10">
+        <div className="h-0.5 w-full bg-gradient-to-r from-king-red via-king-gold to-king-red sm:hidden" />
+        <iframe
+          key={iframeKey}
+          ref={iframeRef}
+          src={DEALR_INVENTORY_SRC}
+          title="Vehicle Inventory"
+          className="block h-[100dvh] w-full border-0 bg-charcoal-900 sm:h-[min(110dvh,1000px)] md:h-[min(120dvh,1100px)]"
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          allow="fullscreen"
+        />
+        <div
+          className="hidden h-1 w-full bg-gradient-to-r from-king-red via-king-gold to-king-red sm:block"
+          aria-hidden
+        />
+      </div>
+    </motion.div>
   );
 }

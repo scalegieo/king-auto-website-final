@@ -1,4 +1,5 @@
 import { BrandLogo } from "@/components/BrandLogo";
+import Link from "next/link";
 import {
   Mail,
   MapPin,
@@ -34,12 +35,12 @@ function YoutubeIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 const FOOTER_LINKS = [
-  { href: "#inventory", label: "Inventory" },
-  { href: "#financing", label: "Financing" },
-  { href: "#about", label: "About Us" },
-  { href: "#visit", label: "Visit Us" },
-  { href: "#contact", label: "Contact" },
-  { href: "#privacy", label: "Privacy Policy" },
+  { href: "/inventory", label: "Inventory" },
+  { href: "/#financing", label: "Financing" },
+  { href: "/#about", label: "About Us" },
+  { href: "/#visit", label: "Visit Us" },
+  { href: "/#contact", label: "Contact" },
+  { href: "/#privacy", label: "Privacy Policy" },
 ];
 
 export function Footer() {
@@ -55,6 +56,12 @@ export function Footer() {
             Premium used vehicles on Havana Street. Live inventory powered by
             Dealr.
           </p>
+          <Link
+            href="/admin"
+            className="mt-4 inline-flex min-h-11 items-center rounded-lg border border-white/20 px-4 text-sm text-white hover:border-king-gold hover:text-king-gold"
+          >
+            Admin
+          </Link>
         </div>
 
         <div>
@@ -72,6 +79,14 @@ export function Footer() {
                 </a>
               </li>
             ))}
+            <li>
+              <Link
+                href="/admin"
+                className="mt-2 inline-flex min-h-11 items-center rounded-lg border border-white/20 px-4 text-sm text-white hover:border-king-gold hover:text-king-gold"
+              >
+                Admin
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -131,7 +146,7 @@ export function Footer() {
         className="max-w-7xl mx-auto border-t border-white/10 pt-6 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between text-xs text-neutral-500"
       >
         <p>© {new Date().getFullYear()} King Auto Inc. All rights reserved.</p>
-        <p>Used Cars Denver · Havana St Auto Sales</p>
+        <p>Used Cars Denver · Aurora, CO 80014</p>
       </div>
     </footer>
   );

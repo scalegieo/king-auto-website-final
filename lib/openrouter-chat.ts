@@ -21,11 +21,11 @@ const HARDCODED = {
   monthlyRequestBudget: 1500,
   dailyRequestLimit: 0, // 0 = use monthly ÷ days
   tz: "America/Denver",
-  siteUrl: "https://www.mykingautoinc.com",
+  siteUrl: "https://www.shopkingauto.com",
   appName: DEALERSHIP.name,
 } as const;
 
-function getOpenRouterApiKey(): string {
+export function getOpenRouterApiKey(): string {
   return (
     process.env.OPENROUTER_API_KEY?.trim() || HARDCODED.apiKey
   );

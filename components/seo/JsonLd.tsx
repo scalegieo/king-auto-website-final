@@ -1,6 +1,4 @@
-import { DEALERSHIP } from "@/lib/dealership";
-
-const SITE_URL = "https://www.mykingautoinc.com";
+import { DEALERSHIP, SITE_URL } from "@/lib/dealership";
 
 const localBusiness = {
   "@context": "https://schema.org",
@@ -12,7 +10,7 @@ const localBusiness = {
   logo: `${SITE_URL}/brand/logo.png`,
   image: `${SITE_URL}/brand/og.png`,
   description:
-    "Premium used car dealership on Havana Street in Aurora, Colorado, serving the Denver metro area with transparent pricing and fast financing.",
+    "Premium used car dealership at 2180 S Havana St, Aurora, CO 80014, serving the Denver metro area with transparent pricing and fast financing.",
   telephone: DEALERSHIP.phoneSchema,
   email: DEALERSHIP.email,
   priceRange: "$$",
