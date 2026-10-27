@@ -17,7 +17,7 @@ const STEPS = [
     n: "02",
     title: "Get pre-approved",
     body: "Check what you can afford with the budget slider, then submit a fast pre-approval.",
-    href: "#financing",
+    href: "/financing",
     icon: CreditCard,
   },
   {

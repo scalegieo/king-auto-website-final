@@ -12,7 +12,7 @@ const ACTIONS = [
     icon: Car,
   },
   {
-    href: "#financing",
+    href: "/financing",
     label: "Get Financed",
     desc: "Budget slider & pre-approval",
     icon: CreditCard,

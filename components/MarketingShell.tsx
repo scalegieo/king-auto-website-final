@@ -1,11 +1,14 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { PreApproveModal } from "@/components/PreApproveModal";
+import type { PreApproveDefaults } from "@/components/LeadForm";
 
-const OpenFinanceContext = createContext<() => void>(() => {});
+type OpenFinance = (prefs?: PreApproveDefaults | string) => void;
+
+const OpenFinanceContext = createContext<OpenFinance>(() => {});
 
 export function useOpenFinance() {
   return useContext(OpenFinanceContext);
@@ -19,17 +22,34 @@ export function MarketingShell({
   vehicleInterest?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const [defaults, setDefaults] = useState<PreApproveDefaults>({
+    vehicleInterest,
+  });
+
+  const openFinance = useCallback(
+    (prefs?: PreApproveDefaults | string) => {
+      if (typeof prefs === "string") {
+        setDefaults({ vehicleInterest: prefs });
+      } else if (prefs) {
+        setDefaults(prefs);
+      } else {
+        setDefaults({ vehicleInterest });
+      }
+      setOpen(true);
+    },
+    [vehicleInterest]
+  );
 
   return (
-    <OpenFinanceContext.Provider value={() => setOpen(true)}>
+    <OpenFinanceContext.Provider value={openFinance}>
       <div className="min-h-screen bg-black">
-        <Navbar onPreApprove={() => setOpen(true)} />
+        <Navbar onPreApprove={() => openFinance()} />
         {children}
         <Footer />
         <PreApproveModal
           open={open}
           onClose={() => setOpen(false)}
-          defaults={{ vehicleInterest }}
+          defaults={defaults}
         />
       </div>
     </OpenFinanceContext.Provider>

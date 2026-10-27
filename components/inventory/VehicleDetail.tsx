@@ -146,13 +146,13 @@ export function VehicleDetail({
               </a>
               <button
                 type="button"
-                onClick={openFinance}
+                onClick={() => openFinance()}
                 className="inline-flex min-h-12 items-center justify-center rounded-lg border border-king-gold bg-king-gold px-4 py-3 text-sm font-semibold text-charcoal-950 hover:bg-king-gold-bright"
               >
                 Get financed on this {vehicle.year} {vehicle.make}
               </button>
               <Link
-                href="/#financing"
+                href="/financing"
                 className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/20 px-4 py-3 text-sm font-semibold text-white hover:border-king-gold hover:text-king-gold"
               >
                 Financing

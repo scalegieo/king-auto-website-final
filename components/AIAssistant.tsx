@@ -56,8 +56,12 @@ export function AIAssistant({ onOpenFinancing }: AIAssistantProps) {
     }
     if (action === "financing") {
       setOpen(false);
-      scrollToId("financing");
-      onOpenFinancing?.();
+      if (window.location.pathname === "/" || window.location.pathname === "/financing") {
+        scrollToId("financing");
+        onOpenFinancing?.();
+      } else {
+        window.location.href = "/financing";
+      }
       return;
     }
     if (action === "visit") {

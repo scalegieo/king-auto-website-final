@@ -8,7 +8,7 @@ import { DEALERSHIP } from "@/lib/dealership";
 
 const LINKS = [
   { href: "/inventory", label: "Inventory" },
-  { href: "/#financing", label: "Financing" },
+  { href: "/financing", label: "Financing" },
   { href: "/#about", label: "About Us" },
   { href: "/#visit", label: "Visit Us" },
   { href: "/#contact", label: "Contact" },
